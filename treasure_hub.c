@@ -17,7 +17,6 @@
 pid_t monitor_pid = -1;
 int monitor_active = 0;
 
-// Structură pentru a stoca informațiile despre o comoară (pentru procesul monitor)
 typedef struct {
     int treasure_id;
     char username[64];
@@ -27,7 +26,6 @@ typedef struct {
     int value;
 } Treasure;
 
-// Funcție pentru procesul de monitorizare
 void list_hunts() {
     DIR *dir;
     struct dirent *entry;
@@ -49,7 +47,6 @@ void list_hunts() {
             strcmp(entry->d_name, ".") != 0 && 
             strcmp(entry->d_name, "..") != 0) {
             
-            // Verificăm dacă directorul conține un fișier treasures.dat
             char treasures_path[MAX_PATH];
             struct stat st;
             
@@ -79,7 +76,6 @@ void list_hunts() {
     closedir(dir);
 }
 
-// Handler pentru semnalul SIGCHLD (când procesul copil se termină)
 void handle_sigchld(int sig) {
     int status;
     pid_t pid = waitpid(-1, &status, WNOHANG);
@@ -97,7 +93,6 @@ void handle_sigchld(int sig) {
     }
 }
 
-// Handler pentru semnalul SIGUSR1 (proces monitor)
 void handle_sigusr1(int sig) {
     FILE *cmd_file = fopen(COMMAND_FILE, "r");
     if (!cmd_file) {
@@ -111,36 +106,26 @@ void handle_sigusr1(int sig) {
     }
     fclose(cmd_file);
     
-    // Eliminăm newline de la sfârșitul comenzii
     command[strcspn(command, "\n")] = 0;
     
     if (strcmp(command, "list_hunts") == 0) {
         list_hunts();
     }
-    // Aici s-ar putea adăuga alte comenzi în viitor
 }
 
-// Funcție pentru procesul de monitorizare
 void start_monitor() {
     struct sigaction sa;
-    
-    // Configurăm handler-ul pentru SIGUSR1
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = handle_sigusr1;
     sigemptyset(&sa.sa_mask);
     sigaction(SIGUSR1, &sa, NULL);
-    
-    // Bucla principală a monitorului
     while (1) {
-        // Așteptăm semnale
         pause();
     }
 }
 
 int main() {
     struct sigaction sa;
-    
-    // Configurăm handler-ul pentru SIGCHLD
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = handle_sigchld;
     sigemptyset(&sa.sa_mask);
@@ -172,19 +157,15 @@ int main() {
                 printf("Procesul de monitorizare rulează deja.\n");
                 continue;
             }
-            
-            // Creăm un proces copil pentru monitor
             pid_t pid = fork();
             
             if (pid == -1) {
                 perror("Eroare la fork");
                 continue;
             } else if (pid == 0) {
-                // Procesul copil
                 start_monitor();
                 exit(0);
             } else {
-                // Procesul părinte
                 monitor_pid = pid;
                 monitor_active = 1;
                 printf("Procesul de monitorizare a fost pornit (PID: %d).\n", pid);
@@ -194,14 +175,10 @@ int main() {
                 printf("Eroare: procesul de monitorizare nu rulează. Porniți-l mai întâi.\n");
                 continue;
             }
-            
-            // Scriem comanda într-un fișier
             FILE *cmd_file = fopen(COMMAND_FILE, "w");
             if (cmd_file) {
                 fprintf(cmd_file, "list_hunts\n");
                 fclose(cmd_file);
-                
-                // Trimitem semnalul SIGUSR1 către monitor
                 kill(monitor_pid, SIGUSR1);
             }
         } else {
@@ -209,7 +186,6 @@ int main() {
         }
     }
     
-    // Curățăm fișierele temporare
     unlink(COMMAND_FILE);
     
     return 0;
