@@ -1,7 +1,7 @@
 #ifndef TREASURE_H
 #define TREASURE_H
 
-#define MAX_PATH 256
+#define MAX_PATH 512
 #define MAX_CLUE_TEXT 512
 #define MAX_USERNAME 64
 
