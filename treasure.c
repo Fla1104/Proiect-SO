@@ -7,7 +7,6 @@
 #include <time.h>
 #include <errno.h>
 
-
 #include "treasure.h"
 #include "file_utils.h"
 
@@ -21,18 +20,16 @@ int add_treasure(const char *hunt_id) {
     int fd, max_id = 0;
 
     snprintf(treasures_file, MAX_PATH, "%s/treasures.dat", hunt_id);
-
     fd = open(treasures_file, O_RDONLY);
     if (fd != -1) {
         Treasure temp;
         while (read(fd, &temp, sizeof(Treasure)) == sizeof(Treasure)) {
             if (temp.treasure_id > max_id) {
-                max_id = temp.treasure_id;
+                max_id = temp.treasure_id; 
             }
         }
         close(fd);
     }
-
     new_treasure.treasure_id = max_id + 1;
 
     printf("\n--- Adăugare comoară nouă ---\n");
@@ -52,13 +49,11 @@ int add_treasure(const char *hunt_id) {
 
     printf("Introduceți valoarea comorii: ");
     scanf("%d", &new_treasure.value);
-
     fd = open(treasures_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
     if (fd == -1) {
         perror("Eroare la deschiderea fișierului de comori");
         return -1;
     }
-
     if (write(fd, &new_treasure, sizeof(Treasure)) != sizeof(Treasure)) {
         perror("Eroare la scrierea comorii în fișier");
         close(fd);
