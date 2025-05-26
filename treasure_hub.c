@@ -110,7 +110,7 @@ void calculate_score() {
             printf("Nu s-au putut obține scorurile sau nu există vânători.\n");
         }
         close(score_pipe[0]);
-        wait(NULL); // Wait for child to finish
+        wait(NULL); 
     }
 }
 
